@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "evh_name": {
+      "value": "telemetry"
+    },
+    "evh_sapolicy_send_name": {
+      "value": "sendtelemetry"
+    },
+    "evh_sapolicy_listen_name": {
+      "value": "listentelemetry"
+    },
+    "storage_table_name": {
+      "value": "weatherdata"
+    },
+    "cosmos_database_name": {
+      "value": "weather"
+    },
+    "cosmos_container_name": {
+      "value": "weatherDevice"
+    },
+    "cosmos_partition_key": {
+      "value": "deviceId"
+    },
+    "kv_secret_name_iothub_connectionstring": {
+      "value": "iothubconnectionstring"
+    },
+    "kv_secret_name_cosmos_authorizationkey": {
+      "value": "cosmosconnectionstring"
+    },
+    "kv_secret_name_evh_listen_connectionstring": {
+      "value": "eventhublistenconnectionstring"
+    },
+    "kv_secret_name_evh_send_accesskey": {
+      "value": "eventhubtelsendaccesskey"
+  },
+    "kv_secret_name_storage_connectionstring": {
+      "value": "storageconnectionstring"
+    }
+  }
+}

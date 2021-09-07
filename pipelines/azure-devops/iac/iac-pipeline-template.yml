@@ -1,0 +1,56 @@
+parameters:
+  - name: base_name
+    type: string
+  - name: environment_symbol
+    type: string
+  - name: location
+    type: string
+  - name: evhns_sku
+    type: string
+  - name: evh_partition_count
+    type: string
+  - name: iothub_sku
+    type: string
+  - name: storage_sku_name
+    type: string
+  - name: storage_sku_tier
+    type: string
+  - name: storage_kind
+    type: string
+  - name: storage_access_tier
+    type: string
+  - name: keyvault_sku
+    type: string
+  - name: cosmos_auto_max_throughput
+    type: string
+  - name: appsrvplan_sku
+    type: string
+  - name: funcplan_sku
+    type: string
+
+steps:
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'rg-${{parameters.base_name}}-${{parameters.environment_symbol}}'
+    location: '${{parameters.location}}'
+    templateLocation: "Linked artifact"
+    csmFile: '$(Build.SourcesDirectory)/arm-templates/azuredeploy.json'
+    csmParametersFile: '$(Build.SourcesDirectory)/arm-templates/azuredeploy.parameters.json'
+    overrideParameters: "-svc_connection_object_id $(SVC_CONNECTION_OBJECT_ID)
+                        -base_name ${{parameters.base_name}}
+                        -environment_symbol ${{parameters.environment_symbol}}
+                        -evhns_sku ${{parameters.evhns_sku}}
+                        -evh_partition_count ${{parameters.evh_partition_count}}
+                        -iothub_sku ${{parameters.iothub_sku}}
+                        -storage_sku_name ${{parameters.storage_sku_name}}
+                        -storage_sku_tier ${{parameters.storage_sku_tier}}
+                        -storage_kind ${{parameters.storage_kind}}
+                        -storage_access_tier ${{parameters.storage_access_tier}}
+                        -keyvault_sku ${{parameters.keyvault_sku}}
+                        -cosmos_auto_max_throughput ${{parameters.cosmos_auto_max_throughput}}
+                        -appsrvplan_sku ${{parameters.appsrvplan_sku}}
+                        -funcplan_sku ${{parameters.funcplan_sku}}"
+    deploymentMode: "Incremental"
+  displayName: "Deploy Azure resources to the environment"

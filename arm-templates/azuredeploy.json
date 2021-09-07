@@ -1,0 +1,641 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+/* Environment variables*/
+    "base_name": {
+      "type": "string",
+      "maxLength": 10,
+      "minLength": 3,
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "environment_symbol": {
+      "type": "string",
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+
+    "svc_connection_object_id": {
+      "type": "string",
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "evhns_sku": {
+      "type": "string",
+      "allowedValues": [ 
+        "Basic", 
+        "Standard",
+        "Premium" 
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "evh_partition_count": {
+      "type": "int",
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "iothub_sku": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "S1",
+        "S2",
+        "S3",
+        "B1",
+        "B2",
+        "B3"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "storage_sku_name": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Standard_ZRS",
+        "Premium_LRS",
+        "Premium_ZRS",
+        "Standard_GZRS",
+        "Standard_RAGZRS"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "storage_sku_tier": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "storage_kind": {
+      "type": "string",
+      "allowedValues": [
+        "Storage",
+        "StorageV2",
+        "BlobStorage",
+        "FileStorage",
+        "BlockBlobStorage"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "storage_access_tier": {
+      "type": "string",
+      "allowedValues": [
+        "Hot",
+        "Cool"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "keyvault_sku": {
+      "type": "string",
+      "allowedValues": [
+        "standard",
+        "premium"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "cosmos_auto_max_throughput": {
+        "type": "int",
+        "minValue": 4000,
+        "maxValue": 1000000,
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "appsrvplan_sku": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+    "funcplan_sku": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "metadata": {
+        "description": "Enironment variable"
+      }
+    },
+/* Parameters from parameter file */
+    "evh_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+
+    "evh_sapolicy_send_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "evh_sapolicy_listen_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+
+    "storage_table_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "cosmos_database_name": {
+        "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+
+    "cosmos_container_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "cosmos_partition_key": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+
+    "kv_secret_name_iothub_connectionstring": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "kv_secret_name_cosmos_authorizationkey": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "kv_secret_name_evh_listen_connectionstring": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "kv_secret_name_evh_send_accesskey": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    },
+    "kv_secret_name_storage_connectionstring": {
+      "type": "string",
+      "metadata": {
+        "description": "From the parameter file"
+      }
+    }
+  },
+  "variables": {
+    "location": "[resourceGroup().location]",
+    "tenant_id": "[subscription().tenantId]",
+    "evhns_name": "[concat('evhns-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "storage_name": "[concat('st', toLower(parameters('base_name')), toLower(parameters('environment_symbol')))]",
+    "iothub_name": "[concat('iot-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "keyvault_name": "[concat('kv-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "cosmos_name": "[concat('cosmos-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "appsrvplan_name": "[concat('plan-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "appsrv_name": "[concat('ase-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "func_storage_name": "[concat('st', toLower(parameters('base_name')), 'func', toLower(parameters('environment_symbol')))]",
+    "func_appsrvplan_name": "[concat('plan-', toLower(parameters('base_name')), '-func-', toLower(parameters('environment_symbol')))]",
+    "func_appsrv_name": "[concat('func-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "func_insights_name": "[concat('appi-', toLower(parameters('base_name')), '-func-', toLower(parameters('environment_symbol')))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2021-01-01-preview",
+      "name": "[variables('evhns_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('evhns_sku')]"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+      "apiVersion": "2021-01-01-preview",
+      "name": "[concat(variables('evhns_name'), '/RootManageSharedAccessKey')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+          "[resourceId('Microsoft.EventHub/namespaces', variables('evhns_name'))]"
+      ],
+      "properties": {
+        "rights": [
+          "Listen",
+          "Manage",
+          "Send"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs",
+      "apiVersion": "2021-01-01-preview",
+      "name": "[concat(variables('evhns_name'), '/', parameters('evh_name'))]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.EventHub/namespaces', variables('evhns_name'))]"
+      ],
+      "properties": {
+        "messageRetentionInDays": 1,
+        "partitionCount": "[parameters('evh_partition_count')]"
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+      "apiVersion": "2021-01-01-preview",
+      "name": "[concat(variables('evhns_name'), '/', parameters('evh_name'), '/', parameters('evh_sapolicy_send_name'))]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('evhns_name'), parameters('evh_name'))]"
+      ],
+      "properties": {
+          "rights": [
+              "Send"
+          ]
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+      "apiVersion": "2021-01-01-preview",
+      "name": "[concat(variables('evhns_name'), '/', parameters('evh_name'), '/', parameters('evh_sapolicy_listen_name'))]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('evhns_name'), parameters('evh_name'))]"
+      ],
+      "properties": {
+          "rights": [
+              "Listen"
+          ]
+      }
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2021-03-31",
+      "name": "[variables('iothub_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('iothub_sku')]",
+        "capacity": 1
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('storage_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('storage_sku_name')]",
+        "tier": "[parameters('storage_sku_tier')]"
+      },
+      "kind": "[parameters('storage_kind')]",
+      "properties": {
+        "accessTier": "[parameters('storage_access_tier')]",
+        "isHnsEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2021-04-01",
+      "name": "[concat(variables('storage_name'), '/default/', parameters('storage_table_name'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "[variables('keyvault_name')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "tenantId": "[variables('tenant_id')]",
+        "sku": {
+          "name": "[parameters('keyvault_sku')]",
+          "family": "A"
+        },
+        "accessPolicies": [
+          {
+            "tenantId": "[variables('tenant_id')]",
+            "objectId": "[parameters('svc_connection_object_id')]",
+            "permissions": {
+              "secrets": [
+                "Get"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2021-04-15",
+      "name": "[variables('cosmos_name')]",
+      "location": "[variables('location')]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2021-04-15",
+      "name": "[concat(variables('cosmos_name'), '/', parameters('cosmos_database_name'))]",
+      "dependsOn": [ "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmos_name'))]" ],
+      "properties":{
+        "resource":{
+          "id": "[parameters('cosmos_database_name')]"
+        },
+        "options": {
+          "autoscaleSettings": { 
+            "maxThroughput": "[parameters('cosmos_auto_max_throughput')]" 
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2021-04-15",
+      "name": "[concat(variables('cosmos_name'), '/', parameters('cosmos_database_name'), '/', parameters('cosmos_container_name'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmos_name'), parameters('cosmos_database_name'))]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "[parameters('cosmos_container_name')]",
+          "partitionKey": {
+            "paths": [
+              "[concat('/', parameters('cosmos_partition_key'))]"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('appsrvplan_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('appsrvplan_sku')]"
+      },
+      "kind": "app"
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('appsrv_name')]",
+      "location": "[variables('location')]",
+      "kind": "app",
+      "dependsOn": [
+          "[resourceId('Microsoft.Web/serverfarms', variables('appsrvplan_name'))]"
+      ],
+      "identity": {
+          "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appsrvplan_name'))]",
+        "siteConfig": {
+          "netFrameworkVersion": "v5.0"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-01-01",
+      "name": "[variables('func_storage_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('func_appsrvplan_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('funcplan_sku')]"
+      },
+      "kind": "app"
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('func_appsrv_name')]",
+      "location": "[variables('location')]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('func_appsrvplan_name'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('func_storage_name'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('func_appsrvplan_name'))]",
+        "siteConfig": {
+          "alwaysOn": true
+        }
+      }
+    },
+    {
+      "type": "microsoft.insights/components",
+      "apiVersion": "2020-02-02-preview",
+      "name": "[variables('func_insights_name')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2019-09-01",
+      "name": "[concat(variables('keyvault_name'), '/add')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+        "[resourceId('Microsoft.Web/sites', variables('appsrv_name'))]",
+        "[resourceId('Microsoft.Web/sites', variables('func_appsrv_name'))]"
+      ],
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[variables('tenant_id')]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('appsrv_name')), '2021-01-15', 'Full').identity.principalId]",
+            "permissions": {
+              "keys": [],
+              "secrets": [
+                "Get"
+              ],
+              "certificates": []
+            }
+          },
+          {
+            "tenantId": "[variables('tenant_id')]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('func_appsrv_name')), '2021-01-15', 'Full').identity.principalId]",
+            "permissions": {
+              "keys": [],
+              "secrets": [
+                "Get"
+              ],
+              "certificates": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(variables('keyvault_name'), '/', parameters('kv_secret_name_iothub_connectionstring'))]",
+      "apiVersion": "2019-09-01",
+      "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+          "[resourceId('Microsoft.Devices/IotHubs', variables('iothub_name'))]"
+      ],
+      "properties": {
+          "value": "[concat('HostName=', variables('iothub_name'), '.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('iothub_name')), '2021-03-31').value[0].primaryKey)]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(variables('keyvault_name'), '/', parameters('kv_secret_name_cosmos_authorizationkey'))]",
+      "apiVersion": "2019-09-01",
+      "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+          "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmos_name'))]"
+      ],
+      "properties": {
+          "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmos_name')),'2021-04-15').primaryMasterKey]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(variables('keyvault_name'), '/', parameters('kv_secret_name_evh_listen_connectionstring'))]",
+      "apiVersion": "2019-09-01",
+      "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('evhns_name'), parameters('evh_name'), parameters('evh_sapolicy_listen_name'))]"
+      ],
+      "properties": {
+          "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('evhns_name'), parameters('evh_name'), parameters('evh_sapolicy_listen_name')), '2021-01-01-preview').primaryConnectionString]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(variables('keyvault_name'), '/', parameters('kv_secret_name_evh_send_accesskey'))]",
+      "apiVersion": "2019-09-01",
+      "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('evhns_name'), parameters('evh_name'), parameters('evh_sapolicy_send_name'))]"
+      ],
+      "properties": {
+          "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('evhns_name'), parameters('evh_name'), parameters('evh_sapolicy_send_name')), '2021-01-01-preview').primaryKey]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(variables('keyvault_name'), '/', parameters('kv_secret_name_storage_connectionstring'))]",
+      "apiVersion": "2019-09-01",
+      "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('keyvault_name'))]",
+          "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_name'))]"
+      ],
+      "properties": {
+          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_name')), '2021-02-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "name": "[concat(variables('appsrv_name'), '/appsettings')]",
+      "apiVersion": "2020-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('appsrv_name'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvault_name'), parameters('kv_secret_name_iothub_connectionstring'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvault_name'), parameters('kv_secret_name_cosmos_authorizationkey'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvault_name'), parameters('kv_secret_name_storage_connectionstring'))]"
+      ],
+      "properties": {
+        "WEBSITE_RUN_FROM_PACKAGE":"1",
+        "IotHub:IotHubConnectionString": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_iothub_connectionstring'), ')')]",
+        "EventHubs:EventHubNamespaceName": "[variables('evhns_name')]",
+        "EventHubs:EventHubName": "[parameters('evh_name')]",
+        "EventHubs:SharedAccessPolicyName": "[parameters('evh_sapolicy_send_name')]",
+        "EventHubs:SharedAccessPolicyKey": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_evh_send_accesskey'), ')')]",
+        "Storage:StorageConnectionString": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_storage_connectionstring'), ')')]",
+        "Storage:TableName": "[parameters('storage_table_name')]",
+        "CosmosDb:Account": "[concat('https://', variables('cosmos_name'), '.documents.azure.com:443/')]",
+        "CosmosDb:Key": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_cosmos_authorizationkey'), ')')]",
+        "CosmosDb:DatabaseName": "[parameters('cosmos_database_name')]",
+        "CosmosDb:ContainerName": "[parameters('cosmos_container_name')]",
+        "CosmosDb:PartitionKey": "[parameters('cosmos_partition_key')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "name": "[concat(variables('func_appsrv_name'), '/appsettings')]",
+      "apiVersion": "2020-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('func_appsrv_name'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvault_name'), parameters('kv_secret_name_iothub_connectionstring'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvault_name'), parameters('kv_secret_name_storage_connectionstring'))]"
+      ],
+      "properties": {
+        "APPINSIGHTS_INSTRUMENTATIONKEY":"[reference(resourceId('microsoft.insights/components', variables('func_insights_name')), '2015-05-01').InstrumentationKey]",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING":"[reference(resourceId('microsoft.insights/components', variables('func_insights_name')), '2015-05-01').ConnectionString]",
+        "AzureWebJobsStorage":"[concat('DefaultEndpointsProtocol=https;AccountName=', variables('func_storage_name'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('func_storage_name')), '2019-06-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION":"~3",
+        "FUNCTIONS_WORKER_RUNTIME":"dotnet",
+        "WEBSITE_RUN_FROM_PACKAGE":"1",
+        "EventHubConnectionString": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_evh_listen_connectionstring'), ')')]",
+        "EventHubName": "[parameters('evh_name')]",
+        "StorageConnectionString": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_storage_connectionstring'), ')')]",
+        "TableName": "[parameters('storage_table_name')]"
+      }
+    }
+  ]
+}

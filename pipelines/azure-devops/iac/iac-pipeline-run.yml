@@ -1,0 +1,26 @@
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- template: ./iac-variables.yml
+- group: vg-sample
+
+steps:
+- template: ./iac-pipeline-template.yml
+  parameters:
+    base_name: '$(BASE_NAME)'
+    environment_symbol: '$(ENVIRONMENT_SYMBOL)'
+    location: '$(LOCATION)'
+    evhns_sku: '$(EVHNS_SKU)'
+    evh_partition_count: '$(EVH_PARTITION_COUNT)'
+    iothub_sku: '$(IOTHUB_SKU)'
+    storage_sku_name: '$(STORAGE_SKU_NAME)'
+    storage_sku_tier: '$(STORAGE_SKU_TIER)'
+    storage_kind: '$(STORAGE_KIND)'
+    storage_access_tier: '$(STORAGE_ACCESS_TIER)'
+    keyvault_sku: '$(KEYVAULT_SKU)'
+    cosmos_auto_max_throughput: '$(COSMOS_AUTO_MAX_THROUGHPUT)'
+    appsrvplan_sku: '$(APPSRVPLAN_SKU)'
+    funcplan_sku: '$(FUNCPLAN_SKU)'

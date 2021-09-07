@@ -1,0 +1,20 @@
+trigger: none
+
+variables:
+- template: ../iac/iac-variables.yml
+- group: vg-sample
+
+stages:
+- stage: WebApi
+  jobs:
+  - template: ./cicd-webapi-template.yml
+    parameters:
+      base_name: $(BASE_NAME)
+      environment_symbol: $(ENVIRONMENT_SYMBOL)
+
+- stage: Function
+  jobs:
+  - template: ./cicd-function-template.yml
+    parameters:
+      base_name: $(BASE_NAME)
+      environment_symbol: $(ENVIRONMENT_SYMBOL)

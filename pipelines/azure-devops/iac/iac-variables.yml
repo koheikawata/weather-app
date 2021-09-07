@@ -1,0 +1,37 @@
+variables:
+  # Common
+  - name: BASE_NAME
+    value: 'sample'
+  - name: ENVIRONMENT_SYMBOL
+    value: 'dev'
+  - name: LOCATION
+    value: 'japaneast'
+  # Event Hubs
+  - name: EVHNS_SKU
+    value: 'Standard'
+  - name: EVH_PARTITION_COUNT
+    value: 1
+  # IoT Hub
+  - name: IOTHUB_SKU
+    value: 'S1'
+  # Storage Account
+  - name: STORAGE_SKU_NAME
+    value: 'Standard_LRS'
+  - name: STORAGE_SKU_TIER
+    value: 'Standard'
+  - name: STORAGE_KIND
+    value: 'StorageV2'
+  - name: STORAGE_ACCESS_TIER
+    value: 'Cool'
+  # Key Vault
+  - name: KEYVAULT_SKU
+    value: 'standard'
+  # Cosmos DB
+  - name: COSMOS_AUTO_MAX_THROUGHPUT
+    value: 4000
+  # App Service
+  - name: APPSRVPLAN_SKU
+    value: 'D1'
+  # Function App
+  - name: FUNCPLAN_SKU
+    value: 'B1'

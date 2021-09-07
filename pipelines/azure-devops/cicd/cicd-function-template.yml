@@ -1,0 +1,49 @@
+parameters:
+  - name: base_name
+    type: string
+  - name: environment_symbol
+    type: string
+
+jobs:
+- job: FunctionBuildDeploy
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 3.1 sdk'
+    inputs:
+      packageType: sdk
+      version: 3.1.x
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet restore'
+    inputs:
+      command: 'restore'
+      projects: '$(System.DefaultWorkingDirectory)/src/TelemetryWriter/TelemetryWriter/TelemetryWriter.csproj'
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      command: 'build'
+      projects: '$(System.DefaultWorkingDirectory)/src/TelemetryWriter/TelemetryWriter/TelemetryWriter.csproj'
+      arguments: '--configuration Release /WarnAsError'
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish build'
+    inputs:
+      command: publish
+      projects: '$(System.DefaultWorkingDirectory)/src/TelemetryWriter/TelemetryWriter/TelemetryWriter.csproj'
+      publishWebProjects: false
+      arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: false
+  - task: ArchiveFiles@2
+    displayName: 'Archive files'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/TelemetryWriter'
+      includeRootFolder: false
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+  - task: AzureFunctionApp@1
+    displayName: 'Azure Functions deploy'
+    inputs:
+      azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+      appType: 'functionApp'
+      appName: 'func-${{parameters.base_name}}-${{parameters.environment_symbol}}'
+      package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
