@@ -23,12 +23,70 @@ parameters:
     type: string
   - name: cosmos_auto_max_throughput
     type: string
+  - name: sqldb_sku_name
+    type: string
+  - name: sqldb_sku_tier
+    type: string
+  - name: sql_admin_login_name
+    type: string
   - name: appsrvplan_sku
     type: string
   - name: funcplan_sku
     type: string
 
 steps:
+# - task: PowerShell@2
+#   condition: eq(variables['SP_SQL_QUERY_RUN_PASSWORD'], '')
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       Write-Host "##vso[task.setvariable variable=spSqlSecretKv;]true"
+#   env:
+#     SP_SQL_QUERY_RUN_PASSWORD: $(SP_SQL_QUERY_RUN_PASSWORD)
+#   displayName: Judge secret for SQL query run service principal
+# - task: AzureKeyVault@1
+#   condition: eq(variables['spSqlSecretKv'], 'true')
+#   inputs:
+#     azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+#     KeyVaultName: 'kv--${{parameters.base_name}}-${{parameters.environment_symbol}}'
+#     SecretsFilter: 'spsqlqueryrunpassword'
+#     RunAsPreJob: false
+#   displayName: Get SQL query run service principal secret from Key Vault
+# - task: PowerShell@2
+#   condition: eq(variables['spSqlSecretKv'], 'true')
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       Write-Host "##vso[task.setvariable variable=SP_SQL_QUERY_RUN_PASSWORD;]$env:spsqlqueryrunpassword"
+#   env:
+#     spsqlqueryrunpassword: $(spsqlqueryrunpassword)
+#   displayName: Overwrite SQL query run service principal password variable
+- task: PowerShell@2
+  condition: eq(variables['SQL_ADMIN_LOGIN_PASS'], '')
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "##vso[task.setvariable variable=sqlAdminSecretKv;]true"
+  env:
+    SQL_ADMIN_LOGIN_PASS: $(SQL_ADMIN_LOGIN_PASS)
+  displayName: Judge secret for SQL Admin
+- task: AzureKeyVault@1
+  condition: eq(variables['sqlAdminSecretKv'], 'true')
+  inputs:
+    azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+    KeyVaultName: 'kv-${{parameters.base_name}}-${{parameters.environment_symbol}}'
+    SecretsFilter: 'sqladminpassword'
+    RunAsPreJob: false
+  displayName: Get SQL Admin secret from Key Vault
+- task: PowerShell@2
+  condition: eq(variables['sqlAdminSecretKv'], 'true')
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "##vso[task.setvariable variable=SQL_ADMIN_LOGIN_PASS;]$env:sqladminpassword"
+  env:
+    sqladminpassword: $(sqladminpassword)
+  displayName: Overwrite SQL Admin password variable
 - task: AzureResourceGroupDeployment@2
   inputs:
     azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
@@ -39,6 +97,7 @@ steps:
     csmFile: '$(Build.SourcesDirectory)/arm-templates/azuredeploy.json'
     csmParametersFile: '$(Build.SourcesDirectory)/arm-templates/azuredeploy.parameters.json'
     overrideParameters: "-svc_connection_object_id $(SVC_CONNECTION_OBJECT_ID)
+                        -svc_connection_aad_name $(SVC_CONNECTION_AAD_NAME)
                         -base_name ${{parameters.base_name}}
                         -environment_symbol ${{parameters.environment_symbol}}
                         -evhns_sku ${{parameters.evhns_sku}}
@@ -50,7 +109,74 @@ steps:
                         -storage_access_tier ${{parameters.storage_access_tier}}
                         -keyvault_sku ${{parameters.keyvault_sku}}
                         -cosmos_auto_max_throughput ${{parameters.cosmos_auto_max_throughput}}
+                        -sqldb_sku_name ${{parameters.sqldb_sku_name}}
+                        -sqldb_sku_tier ${{parameters.sqldb_sku_tier}}
+                        -sql_admin_login_name ${{parameters.sql_admin_login_name}}
+                        -sql_admin_login_pass $(SQL_ADMIN_LOGIN_PASS)
                         -appsrvplan_sku ${{parameters.appsrvplan_sku}}
                         -funcplan_sku ${{parameters.funcplan_sku}}"
-    deploymentMode: "Incremental"
-  displayName: "Deploy Azure resources to the environment"
+    deploymentMode: 'Incremental'
+  displayName: Deploy Azure resources to the environment
+# - task: AzurePowerShell@5
+#   inputs:
+#     azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+#     azurePowerShellVersion: latestVersion
+#     ScriptType: InlineScript
+#     Inline: |
+#       Install-Module -Name "AzureAD" -Force
+#       $tenantId = (Get-AzContext).Tenant.Id
+#       az login --service-principal --username $env:SP_SQL_QUERY_RUN_CLIENT_ID --password $env:SP_SQL_QUERY_RUN_PASSWORD --tenant $tenantId --allow-no-subscriptions
+#       $aadToken = az account get-access-token --resource-type aad-graph | ConvertFrom-Json
+#       $graphToken = az account get-access-token --resource-type ms-graph | ConvertFrom-Json
+#       Connect-AzureAD -TenantId $tenantId -AccountId $env:SP_SQL_QUERY_RUN_CLIENT_ID  -MsAccessToken $graphToken.accessToken -AadAccessToken $aadToken.accessToken
+#       $miIdentity = Get-AzureADServicePrincipal -SearchString "sql-$env:BASE_NAME-$env:ENVIRONMENT_SYMBOL"
+#       $groupMembers = Get-AzureADGroupMember -ObjectId $env:SG_SQL_QUERY_RUN_OBJECT_ID -All $true
+#       $existingMember =  $groupMembers | Where-Object { $_.ObjectId -eq $miIdentity.ObjectId }
+#       if(!$existingMember){
+#         Add-AzureADGroupMember -ObjectId $env:SG_SQL_QUERY_RUN_OBJECT_ID -RefObjectId $miIdentity.ObjectId
+#       }
+#   env:
+#     SP_SQL_QUERY_RUN_CLIENT_ID: $(SP_SQL_QUERY_RUN_CLIENT_ID)
+#     SP_SQL_QUERY_RUN_PASSWORD: $(SP_SQL_QUERY_RUN_PASSWORD)
+#     SG_SQL_QUERY_RUN_OBJECT_ID: $(SG_SQL_QUERY_RUN_OBJECT_ID)
+#     BASE_NAME: ${{parameters.base_name}}
+#     ENVIRONMENT_SYMBOL: ${{parameters.environment_symbol}}
+#   displayName: Add SQL Server managed identity to the security group
+# - task: SqlAzureDacpacDeployment@1
+#   inputs:
+#     azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+#     AuthenticationType: 'servicePrincipal'
+#     ServerName: 'sql-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL).database.windows.net'
+#     DatabaseName: 'sqldb-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL)'
+#     deployType: 'InlineSqlTask'
+#     SqlInline: |
+#       IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE sys.database_principals.name = N'ase-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL)')
+#           BEGIN
+#           CREATE USER [ase-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL)] FROM EXTERNAL PROVIDER
+#           ALTER ROLE db_datareader ADD MEMBER [ase-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL)]
+#           ALTER ROLE db_datawriter ADD MEMBER [ase-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL)]
+#           END
+#       GO
+#       SELECT roles.principal_id AS RolePrincipalID, roles.name AS RolePrincipalName, database_role_members.member_principal_id AS MemberPrincipalID, members.name AS MemberPrincipalName FROM sys.database_role_members AS database_role_members  
+#       JOIN sys.database_principals AS roles ON database_role_members.role_principal_id = roles.principal_id  
+#       JOIN sys.database_principals AS members ON database_role_members.member_principal_id = members.principal_id;  
+#       GO
+#   displayName: Assign App Servcie managed identity to SQL Database
+# - task: AzureCLI@2
+#   condition: ne(variables['spSqlSecretKv'], 'true')
+#   inputs:
+#     azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+#     scriptType: ps
+#     scriptLocation: inlineScript
+#     inlineScript: |
+#       az keyvault secret set --vault-name kv-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL) --name spsqlqueryrunpassword --value $(SP_SQL_QUERY_RUN_PASSWORD)
+#   displayName: Set SQL query run service principal secret in Key Vault
+- task: AzureCLI@2
+  condition: ne(variables['sqlAdminSecretKv'], 'true')
+  inputs:
+    azureSubscription: '$(AZURE_RM_SVC_CONNECTION)'
+    scriptType: ps
+    scriptLocation: inlineScript
+    inlineScript: |
+      az keyvault secret set --vault-name kv-$(BASE_NAME)-$(ENVIRONMENT_SYMBOL) --name sqladminpassword --value $(SQL_ADMIN_LOGIN_PASS)
+  displayName: Set SQL Admin secret in Key Vault

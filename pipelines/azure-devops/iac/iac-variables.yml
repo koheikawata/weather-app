@@ -29,6 +29,13 @@ variables:
   # Cosmos DB
   - name: COSMOS_AUTO_MAX_THROUGHPUT
     value: 4000
+  # SQL Database
+  - name: SQLDB_SKU_NAME
+    value: "Basic"
+  - name: SQLDB_SKU_TIER
+    value: "Basic"
+  - name: SQL_ADMIN_LOGIN_NAME
+    value: "SampleAdmin"
   # App Service
   - name: APPSRVPLAN_SKU
     value: 'D1'

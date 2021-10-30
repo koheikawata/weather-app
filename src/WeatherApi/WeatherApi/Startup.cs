@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Devices;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.Threading.Tasks;
+using WeatherApi.Authentication;
+using WeatherApi.Data;
 using WeatherApi.Interfaces;
 using WeatherApi.Services;
 
@@ -26,6 +30,11 @@ namespace WeatherApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<WeatherHistoryContext>(options =>
+            {
+                SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryDeviceCodeFlow, new CustomAzureSQLAuthProvider());
+                options.UseSqlServer(new SqlConnection(this.Configuration.GetValue<string>("Sql:ConnectionString")));
+            });
             services.AddScoped<RegistryManager>(sp =>
                 RegistryManager.CreateFromConnectionString(this.Configuration.GetValue<string>("IotHub:IotHubConnectionString"))
             );

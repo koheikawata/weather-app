@@ -2,28 +2,42 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-/* Environment variables*/
+/* Pipline secret variables */
+    "sql_admin_login_pass": {
+      "type": "securestring",
+      "metadata": {
+        "description": "From pipeline secret variable"
+      }
+    },
+/* Pipline Library variable group */
+    "svc_connection_object_id": {
+      "type": "string",
+      "metadata": {
+        "description": "From Pipline Library variable group"
+      }
+    },
+    "svc_connection_aad_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From Pipline Library variable group"
+      }
+    },
+/* iac-variables.yml */
     "base_name": {
       "type": "string",
       "maxLength": 10,
       "minLength": 3,
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "environment_symbol": {
       "type": "string",
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
 
-    "svc_connection_object_id": {
-      "type": "string",
-      "metadata": {
-        "description": "Enironment variable"
-      }
-    },
     "evhns_sku": {
       "type": "string",
       "allowedValues": [ 
@@ -32,13 +46,13 @@
         "Premium" 
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "evh_partition_count": {
       "type": "int",
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "iothub_sku": {
@@ -53,7 +67,7 @@
         "B3"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "storage_sku_name": {
@@ -69,7 +83,7 @@
         "Standard_RAGZRS"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "storage_sku_tier": {
@@ -79,7 +93,7 @@
         "Premium"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "storage_kind": {
@@ -92,7 +106,7 @@
         "BlockBlobStorage"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "storage_access_tier": {
@@ -102,7 +116,7 @@
         "Cool"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "keyvault_sku": {
@@ -112,15 +126,43 @@
         "premium"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "cosmos_auto_max_throughput": {
-        "type": "int",
-        "minValue": 4000,
-        "maxValue": 1000000,
+      "type": "int",
+      "minValue": 4000,
+      "maxValue": 1000000,
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
+      }
+    },
+    "sqldb_sku_name": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "From iac-variables.yml"
+      }
+    },
+    "sqldb_sku_tier": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "From iac-variables.yml"
+      }
+    },
+   "sql_admin_login_name": {
+      "type": "string",
+        "metadata": {
+          "description": "From iac-variables.yml"
       }
     },
     "appsrvplan_sku": {
@@ -136,7 +178,7 @@
         "S3"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
     "funcplan_sku": {
@@ -152,84 +194,83 @@
         "S3"
       ],
       "metadata": {
-        "description": "Enironment variable"
+        "description": "From iac-variables.yml"
       }
     },
-/* Parameters from parameter file */
+/* Parameter file */
     "evh_name": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
 
     "evh_sapolicy_send_name": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "evh_sapolicy_listen_name": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
 
     "storage_table_name": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "cosmos_database_name": {
         "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
 
     "cosmos_container_name": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "cosmos_partition_key": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
-
     "kv_secret_name_iothub_connectionstring": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "kv_secret_name_cosmos_authorizationkey": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "kv_secret_name_evh_listen_connectionstring": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "kv_secret_name_evh_send_accesskey": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     },
     "kv_secret_name_storage_connectionstring": {
       "type": "string",
       "metadata": {
-        "description": "From the parameter file"
+        "description": "From parameter file"
       }
     }
   },
@@ -241,6 +282,8 @@
     "iothub_name": "[concat('iot-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "keyvault_name": "[concat('kv-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "cosmos_name": "[concat('cosmos-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "sqlserver_name": "[concat('sql-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "sqldb_name": "[concat('sqldb-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "appsrvplan_name": "[concat('plan-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "appsrv_name": "[concat('ase-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "func_storage_name": "[concat('st', toLower(parameters('base_name')), 'func', toLower(parameters('environment_symbol')))]",
@@ -366,7 +409,8 @@
             "objectId": "[parameters('svc_connection_object_id')]",
             "permissions": {
               "secrets": [
-                "Get"
+                "Get",
+                "Set"
               ]
             }
           }
@@ -415,6 +459,53 @@
             ]
           }
         }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[variables('sqlserver_name')]",
+      "location": "[variables('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "minimalTlsVersion": 1.2,
+        "publicNetworkAccess": "Enabled",
+        "administratorLogin": "[parameters('sql_admin_login_name')]",
+        "administratorLoginPassword": "[parameters('sql_admin_login_pass')]",
+        "administrators": {
+          "administratorType": "ActiveDirectory",
+          "login": "[parameters('svc_connection_aad_name')]",
+          "sid": "[parameters('svc_connection_object_id')]",
+          "tenantId": "[variables('tenant_id')]",
+          "azureADOnlyAuthentication": false
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[concat(variables('sqlserver_name'), '/AllowAllWindowsAzureIps')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('sqlserver_name'))]"
+      ],
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[concat(variables('sqlserver_name'), '/', variables('sqldb_name'))]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('sqlserver_name'))]"
+      ],
+      "sku": {
+        "name": "[parameters('sqldb_sku_name')]",
+        "tier": "[parameters('sqldb_sku_tier')]"
       }
     },
     {
@@ -612,7 +703,8 @@
         "CosmosDb:Key": "[concat('@Microsoft.KeyVault(VaultName=', variables('keyvault_name'), ';SecretName=', parameters('kv_secret_name_cosmos_authorizationkey'), ')')]",
         "CosmosDb:DatabaseName": "[parameters('cosmos_database_name')]",
         "CosmosDb:ContainerName": "[parameters('cosmos_container_name')]",
-        "CosmosDb:PartitionKey": "[parameters('cosmos_partition_key')]"
+        "CosmosDb:PartitionKey": "[parameters('cosmos_partition_key')]",
+        "Sql:ConnectionString": "[concat('Server=tcp:', variables('sqlserver_name'), '.database.windows.net;Authentication=Active Directory Device Code Flow; Database=', variables('sqldb_name'), ';')]"
       }
     },
     {

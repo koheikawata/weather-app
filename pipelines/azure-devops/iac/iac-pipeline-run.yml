@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 variables:
 - template: ./iac-variables.yml
@@ -22,5 +22,8 @@ steps:
     storage_access_tier: '$(STORAGE_ACCESS_TIER)'
     keyvault_sku: '$(KEYVAULT_SKU)'
     cosmos_auto_max_throughput: '$(COSMOS_AUTO_MAX_THROUGHPUT)'
+    sqldb_sku_name: '$(SQLDB_SKU_NAME)'
+    sqldb_sku_tier: '$(SQLDB_SKU_TIER)'
+    sql_admin_login_name: '$(SQL_ADMIN_LOGIN_NAME)'
     appsrvplan_sku: '$(APPSRVPLAN_SKU)'
     funcplan_sku: '$(FUNCPLAN_SKU)'
