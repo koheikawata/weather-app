@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Cosmos;
@@ -35,6 +37,7 @@ namespace WeatherApi
                 SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryDeviceCodeFlow, new CustomAzureSQLAuthProvider());
                 options.UseSqlServer(new SqlConnection(this.Configuration.GetValue<string>("Sql:ConnectionString")));
             });
+            services.AddScoped<ServiceBusClient>(sp => new ServiceBusClient(this.Configuration.GetValue<string>("ServiceBus:HostName"), new DefaultAzureCredential()));
             services.AddScoped<RegistryManager>(sp =>
                 RegistryManager.CreateFromConnectionString(this.Configuration.GetValue<string>("IotHub:IotHubConnectionString"))
             );
@@ -43,6 +46,7 @@ namespace WeatherApi
 
             services.AddScoped<IIothubService, IothubService>();
             services.AddScoped<ITableService, TableServcie>();
+            services.AddScoped<IServiceBusService, ServiceBusService>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

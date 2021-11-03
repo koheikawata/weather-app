@@ -23,6 +23,9 @@
     "cosmos_partition_key": {
       "value": "deviceId"
     },
+    "servicebus_queue_name": {
+      "value": "sample_queue"
+    },
     "kv_secret_name_iothub_connectionstring": {
       "value": "iothubconnectionstring"
     },

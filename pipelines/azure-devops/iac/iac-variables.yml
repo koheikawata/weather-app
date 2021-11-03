@@ -36,6 +36,11 @@ variables:
     value: "Basic"
   - name: SQL_ADMIN_LOGIN_NAME
     value: "SampleAdmin"
+  # Service Bus
+  - name: SB_SKU_NAME
+    value: "Standard"
+  - name: SB_SKU_TIER
+    value: "Standard"
   # App Service
   - name: APPSRVPLAN_SKU
     value: 'D1'

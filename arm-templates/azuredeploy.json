@@ -165,6 +165,22 @@
           "description": "From iac-variables.yml"
       }
     },
+    "sb_sku_name": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Premium",
+        "Standard"
+      ]
+    },
+    "sb_sku_tier": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Premium",
+        "Standard"
+      ]
+    },
     "appsrvplan_sku": {
       "type": "string",
       "allowedValues": [
@@ -243,6 +259,12 @@
         "description": "From parameter file"
       }
     },
+    "servicebus_queue_name": {
+      "type": "string",
+      "metadata": {
+        "description": "From parameter file"
+      }
+    },
     "kv_secret_name_iothub_connectionstring": {
       "type": "string",
       "metadata": {
@@ -284,6 +306,7 @@
     "cosmos_name": "[concat('cosmos-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "sqlserver_name": "[concat('sql-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "sqldb_name": "[concat('sqldb-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
+    "servicebus_name": "[concat('sb-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "appsrvplan_name": "[concat('plan-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "appsrv_name": "[concat('ase-', toLower(parameters('base_name')), '-', toLower(parameters('environment_symbol')))]",
     "func_storage_name": "[concat('st', toLower(parameters('base_name')), 'func', toLower(parameters('environment_symbol')))]",
@@ -509,6 +532,26 @@
       }
     },
     {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[variables('servicebus_name')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('sb_sku_name')]",
+        "tier": "[parameters('sb_sku_tier')]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2021-06-01-preview",
+          "name": "[parameters('servicebus_queue_name')]",
+          "type": "Queues",
+          "dependsOn": [
+              "[concat('Microsoft.ServiceBus/namespaces/', variables('servicebus_name'))]"
+          ]
+        }
+      ]
+    },
+    {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-12-01",
       "name": "[variables('appsrvplan_name')]",
@@ -704,7 +747,9 @@
         "CosmosDb:DatabaseName": "[parameters('cosmos_database_name')]",
         "CosmosDb:ContainerName": "[parameters('cosmos_container_name')]",
         "CosmosDb:PartitionKey": "[parameters('cosmos_partition_key')]",
-        "Sql:ConnectionString": "[concat('Server=tcp:', variables('sqlserver_name'), '.database.windows.net;Authentication=Active Directory Device Code Flow; Database=', variables('sqldb_name'), ';')]"
+        "Sql:ConnectionString": "[concat('Server=tcp:', variables('sqlserver_name'), '.database.windows.net;Authentication=Active Directory Device Code Flow; Database=', variables('sqldb_name'), ';')]",
+        "ServiceBus:HostName":"[concat(variables('servicebus_name'), '.servicebus.windows.net')]",
+        "ServiceBus:QueueName":"[parameters('servicebus_queue_name')]"
       }
     },
     {
