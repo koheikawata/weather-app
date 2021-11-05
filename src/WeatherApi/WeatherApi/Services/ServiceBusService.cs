@@ -1,6 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using WeatherApi.Interfaces;
 
@@ -26,6 +27,8 @@ namespace WeatherApi.Services
             processor.ProcessErrorAsync += ErrorHandler;
 
             await processor.StartProcessingAsync();
+            await Task.Delay(10000);
+            await processor.StopProcessingAsync();
         }
 
         async Task MessageHandler(ProcessMessageEventArgs args)
